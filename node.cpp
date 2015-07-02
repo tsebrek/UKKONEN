@@ -1,0 +1,121 @@
+#include "node.h"
+
+#include <iostream>
+#include <string>
+
+static const int ALPHABET_SIZE = 256;
+
+/*
+	Konstruktor cvora.
+	name - jedinstveni identifikator cvora
+	ord_num - predstavlja kojem znakovnom nizu pripada cvor
+	start_index - pozicija unutar znakovnog niza
+*/
+
+Node::Node(int name, int ord_num, int start_index) {
+	parent_ = NULL;
+	suffix_link_ = NULL;
+	ord_num_ = ord_num;
+	start_index_ = start_index;
+	name_ = name;
+	is_terminal_ = false;
+}
+
+Node::~Node() {
+	for (std::unordered_map<int, Node*>::iterator it = children_.begin(); it != children_.end(); ++it) {
+		delete it->second;
+	}
+}
+
+/*
+	Metoda dodaje cvor djeteta.
+	character - znak kojim zapocinje brid
+	child - cvor djeteta
+	pair - oznaka birda (indeks pocetka i kraja)
+	Metoda postavlja roditelja cvoru djeteta.
+*/
+
+void Node::add_child(int character, Node& child, std::pair<int, int> pair) {
+	children_[character] = &child;
+	edges_[character] = pair;
+	child.set_parent(this);
+
+	if (character >= ALPHABET_SIZE) {
+		is_terminal_ = true;
+	}
+}
+
+
+Node& Node::get_child(int character) {
+	return *children_.at(character);
+}
+
+std::pair<int, int> Node::get_edge(int character) {
+	return edges_.at(character);
+}
+
+bool Node::contains_edge(int character) {
+	return !(edges_.find(character) == edges_.end());
+}
+
+std::vector<int> Node::get_characters() {
+	std::vector<int> chars;
+	chars.reserve(children_.size());
+	for (std::unordered_map<int, Node*>::iterator it = children_.begin(); it != children_.end(); ++it) {
+		chars.push_back(it->first);
+	}
+	return chars;
+}
+
+
+std::pair<int, int> Node::get_edge_from_parent() {
+	for (std::unordered_map<int, Node*>::iterator it = parent_->children_.begin(); it != parent_->children_.end(); ++it) {
+		if (it->second == this) {
+			return parent_->get_edge(it->first);
+		}
+	}
+	return std::make_pair(0, 0);
+}
+
+Node* Node::get_parent() {
+	return parent_;
+}
+
+void Node::set_parent(Node* node) {
+	parent_ = node;
+}
+
+void Node::set_suffix_link(Node* node) {
+	suffix_link_ = node;
+}
+
+Node* Node::get_suffix_link() {
+	return suffix_link_;
+}
+
+bool Node::is_terminal() {
+	return is_terminal_;
+}
+
+int Node::get_start_index() {
+	return start_index_;
+}
+
+int Node::get_suffix_ord_num() {
+	return ord_num_;
+}
+
+int Node::get_name() {
+	return name_;
+}
+bool Node::is_leaf() {
+	return children_.size() == 0;
+}
+
+bool Node::is_root() {
+	return parent_ == NULL;
+}
+
+bool Node::is_inner_node() {
+	return !is_leaf() && !is_root();
+}

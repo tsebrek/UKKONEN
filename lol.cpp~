@@ -1,0 +1,10 @@
+#include <iostream>
+#include <vector>
+
+int main() {
+    std::vector<int> bok(10);
+    bok.push_back(5);
+	std::cout << "BOK";
+	return 0;
+}
+
